@@ -13,7 +13,7 @@ import java.time.OffsetDateTime;
 public class Message {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "property_id", nullable = false)

@@ -7,6 +7,7 @@ import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "favorites")
+@IdClass(FavoriteId.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

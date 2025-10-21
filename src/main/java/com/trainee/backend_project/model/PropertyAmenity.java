@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "property_amenities")
+@IdClass(PropertyAmenityId.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

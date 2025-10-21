@@ -64,7 +64,7 @@ public class PropertyService {
 
         // Guardar amenities
         if (dto.amenityIds != null) {
-            for (Integer amenityId : dto.amenityIds) {
+            for (Long amenityId : dto.amenityIds) {
                 Amenity amenity = amenityRepository.findById(amenityId).orElse(null);
                 if (amenity != null) {
                     PropertyAmenity pa = new PropertyAmenity(saved, amenity);
@@ -75,7 +75,7 @@ public class PropertyService {
         return saved;
     }
 
-    public Optional<Property> findPropertyById(Integer id) {
+    public Optional<Property> findPropertyById(Long id) {
         return propertyRepository.findById(id);
     }
 
@@ -97,7 +97,7 @@ public class PropertyService {
 
 
     @Transactional
-    public Property updateProperty(Integer propertyId, PropertyUpdateDTO dto) {
+    public Property updateProperty(Long propertyId, PropertyUpdateDTO dto) {
         Property property = propertyRepository.findById(propertyId).orElse(null);
         if (property == null) return null;
         if (dto.title != null) property.setTitle(dto.title);
@@ -119,7 +119,7 @@ public class PropertyService {
 
 
     @Transactional
-    public void addImageToProperty(Integer propertyId, String imageUrl) {
+    public void addImageToProperty(Long propertyId, String imageUrl) {
         Property property = propertyRepository.findById(propertyId).orElse(null);
         if (property == null) return;
         PropertyImage img = new PropertyImage();
@@ -130,7 +130,7 @@ public class PropertyService {
 
 
     @Transactional
-    public void addAmenityToProperty(Integer propertyId, Integer amenityId) {
+    public void addAmenityToProperty(Long propertyId, Long amenityId) {
         Property property = propertyRepository.findById(propertyId).orElse(null);
         Amenity amenity = amenityRepository.findById(amenityId).orElse(null);
         if (property == null || amenity == null) return;
