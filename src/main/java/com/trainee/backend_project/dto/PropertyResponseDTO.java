@@ -1,9 +1,11 @@
 package com.trainee.backend_project.dto;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.List;
 
-public class PropertyCreateDTO {
+public class PropertyResponseDTO {
+    public Long id;
     public String title;
     public String description;
     public BigDecimal price;
@@ -17,7 +19,9 @@ public class PropertyCreateDTO {
     public String contactName;
     public String contactPhone;
     public String googleMapsUrl;
+    public String status;
     public Long ownerId;
-    public List<Long> amenityIds;
+    public OffsetDateTime createdAt;
+    public OffsetDateTime updatedAt;
     public List<String> imageUrls;
 }

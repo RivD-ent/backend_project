@@ -75,6 +75,15 @@ public class PropertyService {
         return saved;
     }
 
+    @Transactional
+    public Property createProperty(PropertyCreateDTO dto) {
+        User owner = null;
+        if (dto.ownerId != null) {
+            owner = userRepository.findById(dto.ownerId).orElse(null);
+        }
+        return createProperty(dto, owner);
+    }
+
     public Optional<Property> findPropertyById(Long id) {
         return propertyRepository.findById(id);
     }
