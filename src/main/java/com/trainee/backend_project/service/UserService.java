@@ -22,7 +22,8 @@ public class UserService {
     }
 
     public Optional<User> findUserById(Integer id) {
-        return userRepository.findById(id);
+        //return userRepository.findById(id);
+        return null;
     }
 
     @Transactional

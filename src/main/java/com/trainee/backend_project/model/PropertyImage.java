@@ -27,7 +27,7 @@ public class PropertyImage {
     @Column(length = 255)
     private String description;
 
-    @Column(name = "uploaded_at", columnDefinition = "TIMESTAMPTZ DEFAULT NOW()")
+    @Column(name = "uploaded_at", columnDefinition = "TIMESTAMPTZ DEFAULT NOW()", insertable = false, updatable = false)
     private OffsetDateTime uploadedAt;
 
     // Lombok genera getters, setters, constructores

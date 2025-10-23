@@ -30,7 +30,7 @@ public class User {
 	@Column(length = 20)
 	private String phoneNumber;
 
-	@Column(name = "created_at", columnDefinition = "TIMESTAMPTZ DEFAULT NOW()")
+	@Column(name = "created_at", columnDefinition = "TIMESTAMPTZ DEFAULT NOW()", insertable = false, updatable = false)
 	private OffsetDateTime createdAt;
 
 	@Column(name = "updated_at", columnDefinition = "TIMESTAMPTZ DEFAULT NOW()")

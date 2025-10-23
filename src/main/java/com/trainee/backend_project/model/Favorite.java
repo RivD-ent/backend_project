@@ -22,7 +22,7 @@ public class Favorite {
     @JoinColumn(name = "property_id", nullable = false)
     private Property property;
 
-    @Column(name = "created_at", columnDefinition = "TIMESTAMPTZ DEFAULT NOW()")
+    @Column(name = "created_at", columnDefinition = "TIMESTAMPTZ DEFAULT NOW()", insertable = false, updatable = false)
     private OffsetDateTime createdAt;
 
     // Lombok genera getters, setters, constructores

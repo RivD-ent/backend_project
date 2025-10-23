@@ -61,7 +61,7 @@ public class Property {
 	@JoinColumn(name = "owner_id")
 	private User owner;
 
-	@Column(name = "created_at", columnDefinition = "TIMESTAMPTZ DEFAULT NOW()")
+	@Column(name = "created_at", columnDefinition = "TIMESTAMPTZ DEFAULT NOW()", insertable = false, updatable = false)
 	private OffsetDateTime createdAt;
 
 	@Column(name = "updated_at", columnDefinition = "TIMESTAMPTZ DEFAULT NOW()")
