@@ -32,6 +32,9 @@ public class Property {
 	@Column(length = 100)
 	private String city;
 
+	@Column(length = 100)
+	private String district;
+
 	@Enumerated(EnumType.STRING)
 	@Column(name = "operation_type", nullable = false)
 	private OperationType operationType;

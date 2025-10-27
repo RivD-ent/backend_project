@@ -11,6 +11,7 @@ public class PropertyResponseDTO {
     public BigDecimal price;
     public String address;
     public String city;
+    public String district;
     public String operationType;
     public String propertyType;
     public Integer bedrooms;

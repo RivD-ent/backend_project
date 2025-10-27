@@ -16,7 +16,7 @@ public class Message {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "property_id", nullable = false)
+    @JoinColumn(name = "property_id", nullable = true)
     private Property property;
 
     @ManyToOne

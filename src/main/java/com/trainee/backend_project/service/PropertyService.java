@@ -31,6 +31,8 @@ public class PropertyService {
     private PropertyImageRepository propertyImageRepository;
     @Autowired
     private PropertyAmenityRepository propertyAmenityRepository;
+    @Autowired
+    private com.trainee.backend_project.repository.MessageRepository messageRepository;
 
 
     @Transactional
@@ -41,6 +43,7 @@ public class PropertyService {
         property.setPrice(dto.price);
         property.setAddress(dto.address);
         property.setCity(dto.city);
+    property.setDistrict(dto.district);
         property.setOperationType(Property.OperationType.valueOf(dto.operationType));
         property.setPropertyType(Property.PropertyType.valueOf(dto.propertyType));
         property.setBedrooms(dto.bedrooms);
@@ -88,6 +91,10 @@ public class PropertyService {
         return propertyRepository.findById(id);
     }
 
+    public List<Property> findAllProperties() {
+        return propertyRepository.findAll();
+    }
+
 
     public List<Property> searchProperties(SearchFiltersDTO filters) {
         // Implementación simple: solo filtra por ciudad, precio y habitaciones
@@ -113,7 +120,8 @@ public class PropertyService {
         if (dto.description != null) property.setDescription(dto.description);
         if (dto.price != null) property.setPrice(dto.price);
         if (dto.address != null) property.setAddress(dto.address);
-        if (dto.city != null) property.setCity(dto.city);
+    if (dto.city != null) property.setCity(dto.city);
+    if (dto.district != null) property.setDistrict(dto.district);
         if (dto.operationType != null) property.setOperationType(Property.OperationType.valueOf(dto.operationType));
         if (dto.propertyType != null) property.setPropertyType(Property.PropertyType.valueOf(dto.propertyType));
         if (dto.bedrooms != null) property.setBedrooms(dto.bedrooms);
@@ -145,5 +153,22 @@ public class PropertyService {
         if (property == null || amenity == null) return;
         PropertyAmenity pa = new PropertyAmenity(property, amenity);
         propertyAmenityRepository.save(pa);
+    }
+
+    @Transactional
+    public boolean deleteProperty(Long id) {
+        Optional<Property> p = propertyRepository.findById(id);
+        if (p.isEmpty()) return false;
+        Property property = p.get();
+        // Nullify property reference on messages so messages remain available
+        List<com.trainee.backend_project.model.Message> msgs = messageRepository.findByPropertyId(id);
+        for (com.trainee.backend_project.model.Message m : msgs) {
+            m.setProperty(null);
+        }
+        messageRepository.saveAll(msgs);
+
+        // Now delete property; images, favorites and property-amenities are cascade-deleted
+        propertyRepository.delete(property);
+        return true;
     }
 }

@@ -2,6 +2,7 @@ package com.trainee.backend_project.dto;
 
 import java.math.BigDecimal;
 import java.util.List;
+import jakarta.validation.constraints.NotBlank;
 
 public class PropertyUpdateDTO {
     public String title;
@@ -9,6 +10,7 @@ public class PropertyUpdateDTO {
     public BigDecimal price;
     public String address;
     public String city;
+    public String district;
     public String operationType;
     public String propertyType;
     public Integer bedrooms;

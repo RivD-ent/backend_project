@@ -75,13 +75,13 @@ public class DataInitializer implements ApplicationRunner {
     }
 
     private void insertProperties() {
-        insertPropertyIfNotExists("Moderno Apartamento en Miraflores", "Luminoso apartamento con vista al mar, acabados de lujo y excelente ubicación. Ideal para parejas o ejecutivos.", new BigDecimal("2100000.00"), "Av. Larco 123, Miraflores", "Lima", Property.OperationType.SALE, Property.PropertyType.APARTMENT, 2, 2, 95, "Ana García", "+51987654321", "https://maps.app.goo.gl/abcdef123456", "ana.garcia@example.com");
-        insertPropertyIfNotExists("Casa Familiar con Jardín en La Molina", "Amplia casa de dos pisos con un hermoso jardín trasero, perfecta para una familia. Zona tranquila y segura.", new BigDecimal("4500.00"), "Calle Las Palmeras 456, La Molina", "Lima", Property.OperationType.RENTAL, Property.PropertyType.HOUSE, 4, 3, 220, "Carlos Rodriguez", "+51912345678", "https://maps.app.goo.gl/ghijkl789012", "carlos.r@example.com");
-        insertPropertyIfNotExists("Oficina Céntrica en San Isidro", "Oficina bien iluminada en el corazón del centro financiero de San Isidro. Lista para ocupar.", new BigDecimal("3800.00"), "Av. Javier Prado Este 789, San Isidro", "Lima", Property.OperationType.RENTAL, Property.PropertyType.OFFICE, 0, 1, 60, "Ana García", "+51987654321", "https://maps.app.goo.gl/mnopqr345678", "ana.garcia@example.com");
-        insertPropertyIfNotExists("Loft de Diseño en Barranco", "Espectacular loft con diseño industrial, techos altos y a pasos de los mejores restaurantes y galerías de arte.", new BigDecimal("1850000.00"), "Jr. Batalla de Junín 101, Barranco", "Lima", Property.OperationType.SALE, Property.PropertyType.APARTMENT, 1, 2, 110, "Sofia Lopez", "+51998877665", "https://maps.app.goo.gl/stuvwxyz901234", "sofia.lopez@email.com");
+        insertPropertyIfNotExists("Moderno Apartamento en Miraflores", "Luminoso apartamento con vista al mar, acabados de lujo y excelente ubicación. Ideal para parejas o ejecutivos.", new BigDecimal("2100000.00"), "Av. Larco 123, Miraflores", "Lima", "Miraflores", Property.OperationType.SALE, Property.PropertyType.APARTMENT, 2, 2, 95, "Ana García", "+51987654321", "https://maps.app.goo.gl/abcdef123456", "ana.garcia@example.com");
+        insertPropertyIfNotExists("Casa Familiar con Jardín en La Molina", "Amplia casa de dos pisos con un hermoso jardín trasero, perfecta para una familia. Zona tranquila y segura.", new BigDecimal("4500.00"), "Calle Las Palmeras 456, La Molina", "Lima", "La Molina", Property.OperationType.RENTAL, Property.PropertyType.HOUSE, 4, 3, 220, "Carlos Rodriguez", "+51912345678", "https://maps.app.goo.gl/ghijkl789012", "carlos.r@example.com");
+        insertPropertyIfNotExists("Oficina Céntrica en San Isidro", "Oficina bien iluminada en el corazón del centro financiero de San Isidro. Lista para ocupar.", new BigDecimal("3800.00"), "Av. Javier Prado Este 789, San Isidro", "Lima", "San Isidro", Property.OperationType.RENTAL, Property.PropertyType.OFFICE, 0, 1, 60, "Ana García", "+51987654321", "https://maps.app.goo.gl/mnopqr345678", "ana.garcia@example.com");
+        insertPropertyIfNotExists("Loft de Diseño en Barranco", "Espectacular loft con diseño industrial, techos altos y a pasos de los mejores restaurantes y galerías de arte.", new BigDecimal("1850000.00"), "Jr. Batalla de Junín 101, Barranco", "Lima", "Barranco", Property.OperationType.SALE, Property.PropertyType.APARTMENT, 1, 2, 110, "Sofia Lopez", "+51998877665", "https://maps.app.goo.gl/stuvwxyz901234", "sofia.lopez@email.com");
     }
 
-    private void insertPropertyIfNotExists(String title, String description, BigDecimal price, String address, String city, Property.OperationType operationType, Property.PropertyType propertyType, Integer bedrooms, Integer bathrooms, Integer area, String contactName, String contactPhone, String mapsUrl, String ownerEmail) {
+    private void insertPropertyIfNotExists(String title, String description, BigDecimal price, String address, String city, String district, Property.OperationType operationType, Property.PropertyType propertyType, Integer bedrooms, Integer bathrooms, Integer area, String contactName, String contactPhone, String mapsUrl, String ownerEmail) {
         if (propertyRepository.findByTitle(title).isEmpty()) {
             Property p = new Property();
             p.setTitle(title);
@@ -89,6 +89,7 @@ public class DataInitializer implements ApplicationRunner {
             p.setPrice(price);
             p.setAddress(address);
             p.setCity(city);
+            p.setDistrict(district);
             p.setOperationType(operationType);
             p.setPropertyType(propertyType);
             p.setBedrooms(bedrooms);
