@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/properties")
+@CrossOrigin(origins = "http://localhost:5173")
 public class PropertyController {
 
     @Autowired
