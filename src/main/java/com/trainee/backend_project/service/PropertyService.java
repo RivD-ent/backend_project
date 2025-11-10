@@ -14,8 +14,12 @@ import com.trainee.backend_project.repository.AmenityRepository;
 import com.trainee.backend_project.repository.PropertyImageRepository;
 import com.trainee.backend_project.repository.PropertyAmenityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,14 +40,15 @@ public class PropertyService {
 
 
     @Transactional
-    public Property createProperty(PropertyCreateDTO dto, User owner) {
+    public Property createProperty(PropertyCreateDTO dto, Principal principal) {
+        User owner = resolveUser(principal);
         Property property = new Property();
         property.setTitle(dto.title);
         property.setDescription(dto.description);
         property.setPrice(dto.price);
         property.setAddress(dto.address);
         property.setCity(dto.city);
-    property.setDistrict(dto.district);
+        property.setDistrict(dto.district);
         property.setOperationType(Property.OperationType.valueOf(dto.operationType));
         property.setPropertyType(Property.PropertyType.valueOf(dto.propertyType));
         property.setBedrooms(dto.bedrooms);
@@ -78,21 +83,17 @@ public class PropertyService {
         return saved;
     }
 
-    @Transactional
-    public Property createProperty(PropertyCreateDTO dto) {
-        User owner = null;
-        if (dto.ownerId != null) {
-            owner = userRepository.findById(dto.ownerId).orElse(null);
-        }
-        return createProperty(dto, owner);
-    }
-
     public Optional<Property> findPropertyById(Long id) {
         return propertyRepository.findById(id);
     }
 
     public List<Property> findAllProperties() {
         return propertyRepository.findAll();
+    }
+
+    public List<Property> findPropertiesByOwner(Principal principal) {
+        User owner = resolveUser(principal);
+        return propertyRepository.findAllByOwner(owner);
     }
 
 
@@ -113,15 +114,21 @@ public class PropertyService {
 
 
     @Transactional
-    public Property updateProperty(Long propertyId, PropertyUpdateDTO dto) {
-        Property property = propertyRepository.findById(propertyId).orElse(null);
-        if (property == null) return null;
+    public Property updateProperty(Long propertyId, PropertyUpdateDTO dto, Principal principal) {
+        Property property = propertyRepository.findById(propertyId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "propiedad no encontrada"));
+
+        User currentUser = resolveUser(principal);
+        if (property.getOwner() == null || !property.getOwner().getId().equals(currentUser.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "no autorizado para actualizar esta propiedad");
+        }
+
         if (dto.title != null) property.setTitle(dto.title);
         if (dto.description != null) property.setDescription(dto.description);
         if (dto.price != null) property.setPrice(dto.price);
         if (dto.address != null) property.setAddress(dto.address);
-    if (dto.city != null) property.setCity(dto.city);
-    if (dto.district != null) property.setDistrict(dto.district);
+        if (dto.city != null) property.setCity(dto.city);
+        if (dto.district != null) property.setDistrict(dto.district);
         if (dto.operationType != null) property.setOperationType(Property.OperationType.valueOf(dto.operationType));
         if (dto.propertyType != null) property.setPropertyType(Property.PropertyType.valueOf(dto.propertyType));
         if (dto.bedrooms != null) property.setBedrooms(dto.bedrooms);
@@ -130,6 +137,21 @@ public class PropertyService {
         if (dto.contactName != null) property.setContactName(dto.contactName);
         if (dto.contactPhone != null) property.setContactPhone(dto.contactPhone);
         if (dto.googleMapsUrl != null) property.setGoogleMapsUrl(dto.googleMapsUrl);
+
+        if (dto.imageUrls != null) {
+            propertyImageRepository.deleteByProperty(property);
+            if (property.getImages() != null) {
+                property.getImages().clear();
+            }
+            dto.imageUrls.stream()
+                .filter(url -> url != null && !url.isBlank())
+                .forEach(url -> {
+                    PropertyImage newImage = new PropertyImage();
+                    newImage.setProperty(property);
+                    newImage.setImageUrl(url);
+                    propertyImageRepository.save(newImage);
+                });
+        }
         // Actualizar amenities e imágenes si es necesario (lógica adicional)
         return propertyRepository.save(property);
     }
@@ -170,5 +192,13 @@ public class PropertyService {
         // Now delete property; images, favorites and property-amenities are cascade-deleted
         propertyRepository.delete(property);
         return true;
+    }
+
+    private User resolveUser(Principal principal) {
+        if (principal == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "usuario no autenticado");
+        }
+        return userRepository.findByEmail(principal.getName())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "usuario no encontrado"));
     }
 }

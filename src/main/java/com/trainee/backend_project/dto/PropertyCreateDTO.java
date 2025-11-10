@@ -26,7 +26,6 @@ public class PropertyCreateDTO {
     public String contactName;
     public String contactPhone;
     public String googleMapsUrl;
-    public Long ownerId;
     public List<Long> amenityIds;
     public List<String> imageUrls;
 }

@@ -1,6 +1,7 @@
 package com.trainee.backend_project.dto;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public class PropertyListDTO {
     public Long id;
@@ -9,4 +10,5 @@ public class PropertyListDTO {
     public String city;
     public String district;
     public String firstImageUrl;
+    public List<String> amenities;
 }

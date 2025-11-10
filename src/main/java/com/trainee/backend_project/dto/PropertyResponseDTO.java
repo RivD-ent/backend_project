@@ -25,4 +25,5 @@ public class PropertyResponseDTO {
     public OffsetDateTime createdAt;
     public OffsetDateTime updatedAt;
     public List<String> imageUrls;
+    public List<String> amenities;
 }

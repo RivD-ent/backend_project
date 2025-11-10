@@ -1,15 +1,20 @@
 package com.trainee.backend_project.controller;
 
+import com.trainee.backend_project.dto.PropertyResponseDTO;
 import com.trainee.backend_project.dto.UserCreateDTO;
-import com.trainee.backend_project.dto.UserUpdateDTO;
 import com.trainee.backend_project.dto.UserResponseDTO;
+import com.trainee.backend_project.dto.UserUpdateDTO;
+import com.trainee.backend_project.mapper.PropertyMapper;
+import com.trainee.backend_project.model.Property;
 import com.trainee.backend_project.model.User;
+import com.trainee.backend_project.service.PropertyService;
 import com.trainee.backend_project.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,7 +25,10 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @PostMapping
+    @Autowired
+    private PropertyService propertyService;
+
+    @PostMapping("/register")
     public ResponseEntity<UserResponseDTO> create(@Valid @RequestBody UserCreateDTO dto) {
         User u = userService.registerUser(dto);
         return ResponseEntity.ok(toDto(u));
@@ -63,5 +71,14 @@ public class UserController {
         r.createdAt = u.getCreatedAt();
         r.updatedAt = u.getUpdatedAt();
         return r;
+    }
+
+    @GetMapping("/me/properties")
+    public ResponseEntity<List<PropertyResponseDTO>> getMyProperties(Principal principal) {
+        List<Property> properties = propertyService.findPropertiesByOwner(principal);
+        List<PropertyResponseDTO> response = properties.stream()
+            .map(PropertyMapper::toResponseDto)
+            .toList();
+        return ResponseEntity.ok(response);
     }
 }
