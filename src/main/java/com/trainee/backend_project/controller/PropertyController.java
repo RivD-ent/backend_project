@@ -1,11 +1,12 @@
 package com.trainee.backend_project.controller;
 
 import com.trainee.backend_project.dto.PropertyCreateDTO;
-import com.trainee.backend_project.dto.PropertyListDTO;
+import com.trainee.backend_project.dto.PropertyPageDTO;
 import com.trainee.backend_project.dto.PropertyResponseDTO;
 import com.trainee.backend_project.dto.PropertyUpdateDTO;
 import com.trainee.backend_project.mapper.PropertyMapper;
 import com.trainee.backend_project.model.Property;
+import org.springframework.data.domain.Pageable;
 import com.trainee.backend_project.service.PropertyService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +18,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -38,12 +39,24 @@ public class PropertyController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PropertyListDTO>> getAll() {
-        List<Property> props = propertyService.findAllProperties();
-        List<PropertyListDTO> list = props.stream()
+    public ResponseEntity<PropertyPageDTO> getAll(
+        @RequestParam(required = false) String title,
+        @RequestParam(required = false) String city,
+        @RequestParam(required = false) String district,
+        @RequestParam(required = false) Property.PropertyType propertyType,
+        @RequestParam(required = false) Property.OperationType operationType,
+        Pageable pageable
+    ) {
+        var page = propertyService.searchProperties(title, city, district, propertyType, operationType, pageable);
+        PropertyPageDTO dto = new PropertyPageDTO();
+        dto.content = page.stream()
             .map(PropertyMapper::toListDto)
             .toList();
-        return ResponseEntity.ok(list);
+        dto.currentPage = page.getNumber();
+        dto.totalPages = page.getTotalPages();
+        dto.totalElements = page.getTotalElements();
+        dto.pageSize = page.getSize();
+        return ResponseEntity.ok(dto);
     }
 
     @PutMapping("/{id}")

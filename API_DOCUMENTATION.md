@@ -49,18 +49,36 @@ La API usa JWT para autenticar peticiones protegidas. Obtén un token llamando a
 
 ### GET /api/properties
 - **Descripción**: Lista propiedades visibles públicamente para mostrar en catálogos o landing.
-- **Respuesta (`List<PropertyListDTO>`)**:
+- **Query params opcionales**:
+  - `title`: texto parcial a buscar en el título.
+  - `city`: ciudad exacta (no sensible a mayúsculas/minúsculas).
+  - `district`: distrito exacto (no sensible a mayúsculas/minúsculas).
+  - `propertyType`: tipo de propiedad (`APARTMENT`, `HOUSE`, `OFFICE`, `LAND`).
+  - `operationType`: tipo de operación (`SALE`, `RENTAL`).
+  - Parámetros de paginación estándar (`page`, `size`, `sort`) compatibles con Spring Data, por ejemplo `?page=0&size=9&sort=price,asc`.
+- **Ejemplo**: `/api/properties?city=Lima&operationType=SALE&page=0&size=6`
+- **Respuesta (`PropertyPageDTO`)**:
   ```json
-  [
-    {
-      "id": 12,
-      "title": "Departamento en Miraflores",
-      "price": 180000.00,
-      "city": "Lima",
-      "district": "Miraflores",
-      "firstImageUrl": "https://cdn.example.com/img/depto1.jpg"
-    }
-  ]
+  {
+    "content": [
+      {
+        "id": 12,
+        "title": "Departamento en Miraflores",
+        "price": 180000.00,
+        "city": "Lima",
+        "district": "Miraflores",
+        "firstImageUrl": "https://cdn.example.com/img/depto1.jpg",
+        "amenities": [
+          "Piscina",
+          "Gimnasio"
+        ]
+      }
+    ],
+    "currentPage": 0,
+    "totalPages": 3,
+    "totalElements": 18,
+    "pageSize": 6
+  }
   ```
 
 ### GET /api/properties/{id}
@@ -90,6 +108,11 @@ La API usa JWT para autenticar peticiones protegidas. Obtén un token llamando a
     "imageUrls": [
       "https://cdn.example.com/img/depto1.jpg",
       "https://cdn.example.com/img/depto1b.jpg"
+    ],
+    "amenities": [
+      "Piscina",
+      "Gimnasio",
+      "Ascensor"
     ]
   }
   ```
@@ -146,7 +169,7 @@ La API usa JWT para autenticar peticiones protegidas. Obtén un token llamando a
 - **Respuesta**: `204 No Content`.
 
 ### Otros recursos protegidos
-- **Descripción**: Endpoints relacionados con favoritos, mensajes u otras operaciones internas compartirán el mismo esquema de autenticación. Siempre enviar `Authorization: Bearer <token>`.
+- **Descripción**: Endpoints relacionados con favoritos, mensajería u otras operaciones internas comparten el mismo esquema de autenticación. Siempre enviar `Authorization: Bearer <token>`.
 
 ### POST /api/favorites
 - **Descripción**: Marca una propiedad como favorita para el usuario autenticado.
@@ -165,6 +188,79 @@ La API usa JWT para autenticar peticiones protegidas. Obtén un token llamando a
 ### DELETE /api/favorites/{propertyId}
 - **Descripción**: Quita la propiedad indicada de los favoritos del usuario autenticado.
 - **Respuesta**: `204 No Content`.
+
+### POST /api/messages
+- **Descripción**: Envía un nuevo mensaje al propietario de un anuncio.
+- **Request body (`MessageCreateDTO`)**:
+  ```json
+  {
+    "propertyId": 12,
+    "receiverId": 5,
+    "messageContent": "Hola, ¿sigue disponible?"
+  }
+  ```
+- **Respuesta (`MessageResponseDTO`)**:
+  ```json
+  {
+    "id": 48,
+    "propertyId": 12,
+    "senderId": 9,
+    "receiverId": 5,
+    "messageContent": "Hola, ¿sigue disponible?",
+    "isRead": false,
+    "sentAt": "2025-11-16T23:45:12.398Z"
+  }
+  ```
+
+### GET /api/messages/conversations
+- **Descripción**: Devuelve la bandeja de entrada del usuario autenticado agrupando conversaciones por anuncio y contraparte.
+- **Respuesta (`List<ConversationSummaryDTO>`)**:
+  ```json
+  [
+    {
+      "propertyId": 12,
+      "propertyTitle": "Departamento en Miraflores",
+      "otherUserId": 5,
+      "otherUserName": "Ana Pérez",
+      "lastMessageContent": "Gracias, te aviso pronto"
+    },
+    {
+      "propertyId": 0,
+      "propertyTitle": null,
+      "otherUserId": 14,
+      "otherUserName": "Carlos López",
+      "lastMessageContent": "¿Podemos coordinar una llamada?"
+    }
+  ]
+  ```
+  > `propertyId` vale `0` cuando la conversación no está asociada a un anuncio específico.
+
+### GET /api/messages/conversations/{propertyId}/{otherUserId}
+- **Descripción**: Obtiene todo el historial de mensajes entre el usuario autenticado y el otro participante para el anuncio indicado.
+- **Respuesta (`List<MessageResponseDTO>`)**:
+  ```json
+  [
+    {
+      "id": 40,
+      "propertyId": 12,
+      "senderId": 9,
+      "receiverId": 5,
+      "messageContent": "Hola, ¿sigue disponible?",
+      "isRead": false,
+      "sentAt": "2025-11-16T20:41:15.123Z"
+    },
+    {
+      "id": 41,
+      "propertyId": 12,
+      "senderId": 5,
+      "receiverId": 9,
+      "messageContent": "Sí, podemos agendar una visita",
+      "isRead": false,
+      "sentAt": "2025-11-16T20:42:03.501Z"
+    }
+  ]
+  ```
+  > Usa `0` como `propertyId` en la URL para recuperar conversaciones sin anuncio.
 
 ## Notas para el frontend
 - Todas las solicitudes deben enviar `Content-Type: application/json` cuando haya body.

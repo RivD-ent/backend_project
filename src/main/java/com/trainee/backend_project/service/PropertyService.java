@@ -14,6 +14,9 @@ import com.trainee.backend_project.repository.AmenityRepository;
 import com.trainee.backend_project.repository.PropertyImageRepository;
 import com.trainee.backend_project.repository.PropertyAmenityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -91,6 +94,52 @@ public class PropertyService {
         return propertyRepository.findAll();
     }
 
+    public Page<Property> searchProperties(
+        String title,
+        String city,
+        String district,
+        Property.PropertyType propertyType,
+        Property.OperationType operationType,
+        Pageable pageable
+    ) {
+        Specification<Property> spec = null;
+
+        if (title != null && !title.isBlank()) {
+            String likePattern = "%" + title.trim().toLowerCase() + "%";
+            Specification<Property> titleSpec = (root, query, cb) ->
+                cb.like(cb.lower(root.get("title")), likePattern);
+            spec = combine(spec, titleSpec);
+        }
+
+        if (city != null && !city.isBlank()) {
+            String normalizedCity = city.trim().toLowerCase();
+            Specification<Property> citySpec = (root, query, cb) ->
+                cb.equal(cb.lower(root.get("city")), normalizedCity);
+            spec = combine(spec, citySpec);
+        }
+
+        if (district != null && !district.isBlank()) {
+            String normalizedDistrict = district.trim().toLowerCase();
+            Specification<Property> districtSpec = (root, query, cb) ->
+                cb.equal(cb.lower(root.get("district")), normalizedDistrict);
+            spec = combine(spec, districtSpec);
+        }
+
+        if (propertyType != null) {
+            Specification<Property> typeSpec = (root, query, cb) ->
+                cb.equal(root.get("propertyType"), propertyType);
+            spec = combine(spec, typeSpec);
+        }
+
+        if (operationType != null) {
+            Specification<Property> operationSpec = (root, query, cb) ->
+                cb.equal(root.get("operationType"), operationType);
+            spec = combine(spec, operationSpec);
+        }
+
+        return propertyRepository.findAll(spec, pageable);
+    }
+
     public List<Property> findPropertiesByOwner(Principal principal) {
         User owner = resolveUser(principal);
         return propertyRepository.findAllByOwner(owner);
@@ -98,17 +147,21 @@ public class PropertyService {
 
 
     public List<Property> searchProperties(SearchFiltersDTO filters) {
-        // Implementación simple: solo filtra por ciudad, precio y habitaciones
-        // Para búsquedas complejas, usar Specification o QueryDSL
-        List<Property> all = propertyRepository.findAll();
-        return all.stream()
-            .filter(p -> filters.city == null || p.getCity().equalsIgnoreCase(filters.city))
+        // Mantiene compatibilidad con filtros existentes delegando a la nueva especificación dinámica.
+        Page<Property> page = searchProperties(
+            null,
+            filters.city,
+            null,
+            filters.propertyType != null ? Property.PropertyType.valueOf(filters.propertyType.toUpperCase()) : null,
+            filters.operationType != null ? Property.OperationType.valueOf(filters.operationType.toUpperCase()) : null,
+            Pageable.unpaged()
+        );
+
+        return page.getContent().stream()
             .filter(p -> filters.minPrice == null || p.getPrice().compareTo(filters.minPrice) >= 0)
             .filter(p -> filters.maxPrice == null || p.getPrice().compareTo(filters.maxPrice) <= 0)
             .filter(p -> filters.minBedrooms == null || (p.getBedrooms() != null && p.getBedrooms() >= filters.minBedrooms))
             .filter(p -> filters.maxBedrooms == null || (p.getBedrooms() != null && p.getBedrooms() <= filters.maxBedrooms))
-            .filter(p -> filters.operationType == null || p.getOperationType().name().equalsIgnoreCase(filters.operationType))
-            .filter(p -> filters.propertyType == null || p.getPropertyType().name().equalsIgnoreCase(filters.propertyType))
             .toList();
     }
 
@@ -200,5 +253,12 @@ public class PropertyService {
         }
         return userRepository.findByEmail(principal.getName())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "usuario no encontrado"));
+    }
+
+    private Specification<Property> combine(Specification<Property> base, Specification<Property> addition) {
+        if (addition == null) {
+            return base;
+        }
+        return base == null ? addition : base.and(addition);
     }
 }
